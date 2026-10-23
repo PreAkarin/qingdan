@@ -51,7 +51,6 @@ public sealed class DesktopLayerService : IDisposable
     private bool _allowHide = true;
     private bool _disposed;
     private DateTime _lastHostCheck = DateTime.MinValue;
-    private DateTime _lastLower = DateTime.MinValue;
 
     public DesktopLayerService(string? logPath = null)
     {
@@ -134,7 +133,6 @@ public sealed class DesktopLayerService : IDisposable
             }
 
             _allowHide = false;
-            SendToDesktopBottom();
             Evaluate(force: true);
             Log("widget shown");
         }
@@ -279,7 +277,7 @@ public sealed class DesktopLayerService : IDisposable
         var showing = _desktopHost != IntPtr.Zero && _anchor != IntPtr.Zero &&
                       DesktopMonitor.IsWindowAbove(_desktopHost, _anchor);
 
-        if (showing != _showDesktop || force)
+        if (showing != _showDesktop)
         {
             _showDesktop = showing;
             if (showing)
@@ -288,6 +286,10 @@ public sealed class DesktopLayerService : IDisposable
             }
             else
             {
+                // Returning from Show Desktop is the only time the widget is sent
+                // back down. After that it behaves like a normal top-level window:
+                // clicking it raises it, and activating other windows covers it.
+                // The old 4-second forced lower made it impossible to keep on top.
                 LowerToDesktopBottom();
             }
 
@@ -304,10 +306,6 @@ public sealed class DesktopLayerService : IDisposable
             {
                 ShowOnDesktopTop();
             }
-        }
-        else if ((DateTime.Now - _lastLower).TotalSeconds > 4)
-        {
-            LowerToDesktopBottom();
         }
     }
 
@@ -398,7 +396,6 @@ public sealed class DesktopLayerService : IDisposable
                 SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
             DesktopMonitor.SetWindowPos(_hwnd, HWND_BOTTOM, 0, 0, 0, 0,
                 SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
-            _lastLower = DateTime.Now;
         }
         catch
         {
