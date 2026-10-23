@@ -1,0 +1,631 @@
+<Window x:Class="Qingdan.Views.WidgetWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:models="clr-namespace:Qingdan.Models"
+        Title="清单悬浮窗"
+        Width="384"
+        Height="548"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent"
+        ShowInTaskbar="False"
+        ShowActivated="False"
+        ResizeMode="NoResize"
+        Topmost="False"
+        WindowStartupLocation="Manual"
+        FontFamily="{StaticResource AppFont}"
+        FontSize="12"
+        Foreground="{StaticResource TextPrimaryBrush}"
+        UseLayoutRounding="True"
+        SnapsToDevicePixels="True"
+        TextOptions.TextFormattingMode="Display"
+        PreviewKeyDown="Window_PreviewKeyDown">
+
+    <Window.Resources>
+        <ResourceDictionary>
+            <LinearGradientBrush x:Key="WidgetWindowBackgroundBrush" StartPoint="0,0" EndPoint="1,1">
+                <GradientStop Color="#F2FAFCFF" Offset="0" />
+                <GradientStop Color="#F2E7EEFC" Offset="1" />
+            </LinearGradientBrush>
+            <SolidColorBrush x:Key="WidgetTextBrush" Color="#172039" />
+            <SolidColorBrush x:Key="WidgetTextSecondaryBrush" Color="#5C6780" />
+            <SolidColorBrush x:Key="WidgetMutedBrush" Color="#8A94A8" />
+            <SolidColorBrush x:Key="WidgetBorderBrush" Color="#AFC9D4EA" />
+            <SolidColorBrush x:Key="WidgetSurfaceBrush" Color="#A6FFFFFF" />
+            <SolidColorBrush x:Key="WidgetPopupBackgroundBrush" Color="#F9FAFE" />
+            <SolidColorBrush x:Key="WidgetInputBrush" Color="#B8FFFFFF" />
+            <SolidColorBrush x:Key="WidgetHoverBrush" Color="#14000000" />
+            <SolidColorBrush x:Key="WidgetDividerBrush" Color="#B8D8E0EE" />
+            <SolidColorBrush x:Key="WidgetAccentBrush" Color="#5268EF" />
+            <SolidColorBrush x:Key="WidgetAccentSoftBrush" Color="#235268EF" />
+            <SolidColorBrush x:Key="WidgetDangerBrush" Color="#D94A42" />
+            <SolidColorBrush x:Key="WidgetDangerSoftBrush" Color="#1FD94A42" />
+            <SolidColorBrush x:Key="WidgetDoneBrush" Color="#1E9A71" />
+            <SolidColorBrush x:Key="WidgetDoneSoftBrush" Color="#1F1E9A71" />
+            <SolidColorBrush x:Key="WidgetCheckRingBrush" Color="#8A94A8" />
+            <SolidColorBrush x:Key="WidgetIconTileBrush" Color="#5268EF" />
+
+            <Style TargetType="ScrollBar" BasedOn="{StaticResource SlimScrollBarStyle}" />
+            <Style TargetType="MenuItem" BasedOn="{StaticResource AppMenuItemStyle}" />
+            <Style TargetType="Separator" BasedOn="{StaticResource MenuSeparatorStyle}" />
+
+            <Style x:Key="WidgetIconButtonStyle" TargetType="Button">
+                <Setter Property="Width" Value="28" />
+                <Setter Property="Height" Value="28" />
+                <Setter Property="Background" Value="Transparent" />
+                <Setter Property="Foreground" Value="{DynamicResource WidgetMutedBrush}" />
+                <Setter Property="FontFamily" Value="{StaticResource IconFont}" />
+                <Setter Property="FontSize" Value="12" />
+                <Setter Property="Cursor" Value="Hand" />
+                <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="Button">
+                            <Grid>
+                                <Border x:Name="Hover" Background="{DynamicResource WidgetHoverBrush}" Opacity="0" CornerRadius="8" />
+                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            </Grid>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="Hover" Property="Opacity" Value="1" />
+                                    <Setter Property="Foreground" Value="{DynamicResource WidgetTextBrush}" />
+                                </Trigger>
+                                <Trigger Property="IsPressed" Value="True">
+                                    <Setter TargetName="Hover" Property="Opacity" Value="1" />
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+            <Style x:Key="WidgetAddButtonStyle" TargetType="Button">
+                <Setter Property="Width" Value="36" />
+                <Setter Property="Height" Value="36" />
+                <Setter Property="Background" Value="{DynamicResource WidgetAccentBrush}" />
+                <Setter Property="Foreground" Value="White" />
+                <Setter Property="FontFamily" Value="{StaticResource IconFont}" />
+                <Setter Property="FontSize" Value="14" />
+                <Setter Property="Cursor" Value="Hand" />
+                <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="Button">
+                            <Grid>
+                                <Border Background="{TemplateBinding Background}" CornerRadius="11" />
+                                <Border x:Name="Overlay" Background="#FFFFFF" Opacity="0" CornerRadius="11" />
+                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            </Grid>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="Overlay" Property="Opacity" Value="0.12" />
+                                </Trigger>
+                                <Trigger Property="IsPressed" Value="True">
+                                    <Setter TargetName="Overlay" Property="Opacity" Value="0.2" />
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+            <Style x:Key="WidgetMiniButtonStyle" TargetType="Button">
+                <Setter Property="Height" Value="28" />
+                <Setter Property="MinWidth" Value="52" />
+                <Setter Property="Padding" Value="10,0" />
+                <Setter Property="Background" Value="{DynamicResource WidgetAccentBrush}" />
+                <Setter Property="Foreground" Value="White" />
+                <Setter Property="FontSize" Value="11" />
+                <Setter Property="FontFamily" Value="{StaticResource AppFont}" />
+                <Setter Property="FontWeight" Value="SemiBold" />
+                <Setter Property="Cursor" Value="Hand" />
+                <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="Button">
+                            <Grid>
+                                <Border Background="{TemplateBinding Background}" CornerRadius="8" />
+                                <Border x:Name="Overlay" Background="#FFFFFF" Opacity="0" CornerRadius="8" />
+                                <ContentPresenter Margin="{TemplateBinding Padding}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            </Grid>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="Overlay" Property="Opacity" Value="0.12" />
+                                </Trigger>
+                                <Trigger Property="IsPressed" Value="True">
+                                    <Setter TargetName="Overlay" Property="Opacity" Value="0.2" />
+                                </Trigger>
+                                <Trigger Property="IsEnabled" Value="False">
+                                    <Setter Property="Opacity" Value="0.45" />
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+            <Style x:Key="WidgetFooterToggleStyle" TargetType="ToggleButton">
+                <Setter Property="Height" Value="27" />
+                <Setter Property="Padding" Value="8,0" />
+                <Setter Property="Background" Value="Transparent" />
+                <Setter Property="Foreground" Value="{DynamicResource WidgetMutedBrush}" />
+                <Setter Property="FontFamily" Value="{StaticResource AppFont}" />
+                <Setter Property="FontSize" Value="10.5" />
+                <Setter Property="Cursor" Value="Hand" />
+                <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="ToggleButton">
+                            <Grid>
+                                <Border x:Name="Bg" Background="{TemplateBinding Background}" CornerRadius="7" />
+                                <ContentPresenter Margin="{TemplateBinding Padding}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            </Grid>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="Bg" Property="Background" Value="{DynamicResource WidgetHoverBrush}" />
+                                    <Setter Property="Foreground" Value="{DynamicResource WidgetTextSecondaryBrush}" />
+                                </Trigger>
+                                <Trigger Property="IsChecked" Value="True">
+                                    <Setter TargetName="Bg" Property="Background" Value="{DynamicResource WidgetAccentSoftBrush}" />
+                                    <Setter Property="Foreground" Value="{DynamicResource WidgetAccentBrush}" />
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+            <Style x:Key="WidgetTaskCheckBoxStyle" TargetType="CheckBox">
+                <Setter Property="Width" Value="20" />
+                <Setter Property="Height" Value="20" />
+                <Setter Property="Cursor" Value="Hand" />
+                <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="CheckBox">
+                            <Grid Background="Transparent">
+                                <Ellipse x:Name="Ring" Width="18" Height="18" Fill="Transparent"
+                                         Stroke="{DynamicResource WidgetCheckRingBrush}" StrokeThickness="1.4" />
+                                <Path x:Name="CheckPath" Data="M 4.5 9 L 8 12.5 L 14 5.8"
+                                      Stroke="White" StrokeThickness="1.8"
+                                      StrokeStartLineCap="Round" StrokeEndLineCap="Round"
+                                      HorizontalAlignment="Center" VerticalAlignment="Center"
+                                      Visibility="Collapsed" />
+                            </Grid>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsChecked" Value="True">
+                                    <Setter TargetName="Ring" Property="Fill" Value="{DynamicResource WidgetDoneBrush}" />
+                                    <Setter TargetName="Ring" Property="Stroke" Value="{DynamicResource WidgetDoneBrush}" />
+                                    <Setter TargetName="CheckPath" Property="Visibility" Value="Visible" />
+                                </Trigger>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="Ring" Property="Stroke" Value="{DynamicResource WidgetAccentBrush}" />
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+            <DataTemplate x:Key="WidgetCategoryOptionTemplate" DataType="{x:Type models:CategoryOption}">
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <Ellipse Width="7" Height="7" Margin="0,0,7,0"
+                             Fill="{Binding Color, Converter={StaticResource HexToBrushConverter}}" />
+                    <TextBlock Text="{Binding Name}" FontSize="11.5" TextTrimming="CharacterEllipsis"
+                               Foreground="{DynamicResource WidgetTextBrush}" />
+                </StackPanel>
+            </DataTemplate>
+
+            <Style x:Key="WidgetComboToggleStyle" TargetType="ToggleButton">
+                <Setter Property="Focusable" Value="False" />
+                <Setter Property="ClickMode" Value="Press" />
+                <Setter Property="Cursor" Value="Hand" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="ToggleButton">
+                            <Border x:Name="ComboBorder"
+                                    Background="{TemplateBinding Background}"
+                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                    BorderThickness="1"
+                                    CornerRadius="10">
+                                <Grid>
+                                    <ContentPresenter Margin="{TemplateBinding Padding}" HorizontalAlignment="Left"
+                                                      VerticalAlignment="Center"
+                                                      Content="{TemplateBinding Content}"
+                                                      ContentTemplate="{TemplateBinding ContentTemplate}"
+                                                      TextElement.Foreground="{TemplateBinding Foreground}" />
+                                    <Path Data="M 1 1 L 4.5 4.5 L 8 1"
+                                          Stroke="{DynamicResource WidgetMutedBrush}" StrokeThickness="1.4"
+                                          StrokeStartLineCap="Round" StrokeEndLineCap="Round"
+                                          HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,11,0" />
+                                </Grid>
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="ComboBorder" Property="BorderBrush" Value="{DynamicResource WidgetAccentBrush}" />
+                                </Trigger>
+                                <Trigger Property="IsChecked" Value="True">
+                                    <Setter TargetName="ComboBorder" Property="BorderBrush" Value="{DynamicResource WidgetAccentBrush}" />
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+            <Style x:Key="WidgetComboItemStyle" TargetType="ComboBoxItem">
+                <Setter Property="Padding" Value="9,7" />
+                <Setter Property="Margin" Value="2,1" />
+                <Setter Property="Cursor" Value="Hand" />
+                <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+                <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="ComboBoxItem">
+                            <Border x:Name="ItemBorder" Background="Transparent" CornerRadius="7" Padding="{TemplateBinding Padding}">
+                                <ContentPresenter />
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsHighlighted" Value="True">
+                                    <Setter TargetName="ItemBorder" Property="Background" Value="{DynamicResource WidgetHoverBrush}" />
+                                </Trigger>
+                                <Trigger Property="IsSelected" Value="True">
+                                    <Setter TargetName="ItemBorder" Property="Background" Value="{DynamicResource WidgetAccentSoftBrush}" />
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+            <Style x:Key="WidgetComboBoxStyle" TargetType="ComboBox">
+                <Setter Property="Height" Value="36" />
+                <Setter Property="Background" Value="{DynamicResource WidgetInputBrush}" />
+                <Setter Property="BorderBrush" Value="{DynamicResource WidgetBorderBrush}" />
+                <Setter Property="BorderThickness" Value="1" />
+                <Setter Property="Foreground" Value="{DynamicResource WidgetTextBrush}" />
+                <Setter Property="Padding" Value="11,0,30,0" />
+                <Setter Property="Cursor" Value="Hand" />
+                <Setter Property="FontFamily" Value="{StaticResource AppFont}" />
+                <Setter Property="FontSize" Value="11.5" />
+                <Setter Property="MaxDropDownHeight" Value="260" />
+                <Setter Property="ItemTemplate" Value="{StaticResource WidgetCategoryOptionTemplate}" />
+                <Setter Property="ItemContainerStyle" Value="{StaticResource WidgetComboItemStyle}" />
+                <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="ComboBox">
+                            <Grid>
+                                <ToggleButton Style="{StaticResource WidgetComboToggleStyle}"
+                                              Background="{TemplateBinding Background}"
+                                              BorderBrush="{TemplateBinding BorderBrush}"
+                                              BorderThickness="{TemplateBinding BorderThickness}"
+                                              Foreground="{TemplateBinding Foreground}"
+                                              Padding="{TemplateBinding Padding}"
+                                              Content="{TemplateBinding SelectionBoxItem}"
+                                              ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}" />
+                                <Popup x:Name="PART_Popup" IsOpen="{TemplateBinding IsDropDownOpen}"
+                                       Placement="Bottom" VerticalOffset="5" AllowsTransparency="True" Focusable="False"
+                                       PopupAnimation="Fade">
+                                    <Border MinWidth="{Binding ActualWidth, RelativeSource={RelativeSource TemplatedParent}}"
+                                            MaxHeight="{TemplateBinding MaxDropDownHeight}"
+                                            Background="{DynamicResource WidgetPopupBackgroundBrush}"
+                                            BorderBrush="{DynamicResource WidgetBorderBrush}"
+                                            BorderThickness="1" CornerRadius="11" Padding="5"
+                                            Effect="{StaticResource PopupShadow}">
+                                        <ScrollViewer VerticalScrollBarVisibility="Auto"
+                                                      HorizontalScrollBarVisibility="Disabled">
+                                            <ItemsPresenter />
+                                        </ScrollViewer>
+                                    </Border>
+                                </Popup>
+                            </Grid>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+            <Style x:Key="WidgetTaskRowStyle" TargetType="Border">
+                <Setter Property="Background" Value="Transparent" />
+                <Setter Property="CornerRadius" Value="10" />
+                <Setter Property="Padding" Value="7,7" />
+                <Setter Property="Margin" Value="0,0,0,2" />
+                <Setter Property="Cursor" Value="Hand" />
+                <Style.Triggers>
+                    <Trigger Property="IsMouseOver" Value="True">
+                        <Setter Property="Background" Value="{DynamicResource WidgetHoverBrush}" />
+                    </Trigger>
+                    <DataTrigger Binding="{Binding IsDone}" Value="True">
+                        <Setter Property="Opacity" Value="0.62" />
+                    </DataTrigger>
+                </Style.Triggers>
+            </Style>
+
+            <DataTemplate x:Key="WidgetTaskTemplate" DataType="{x:Type models:TodoItem}">
+                <Border Style="{StaticResource WidgetTaskRowStyle}"
+                        ToolTip="{Binding Title}"
+                        MouseLeftButtonDown="TaskRow_MouseLeftButtonDown">
+                    <Border.ContextMenu>
+                        <ContextMenu Style="{StaticResource AppContextMenuStyle}"
+                                     DataContext="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource Self}}">
+                            <MenuItem Header="标记为已完成" Click="MenuMarkDone_Click" />
+                            <MenuItem Header="标记为紧急" Click="MenuMarkUrgent_Click" />
+                            <MenuItem Header="标记为未处理" Click="MenuMarkPending_Click" />
+                            <Separator />
+                            <MenuItem Header="编辑待办…" Click="MenuEdit_Click" />
+                            <MenuItem Header="删除待办" Style="{StaticResource DangerMenuItemStyle}" Click="MenuDelete_Click" />
+                        </ContextMenu>
+                    </Border.ContextMenu>
+
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="24" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+
+                        <CheckBox Grid.Row="0" Grid.RowSpan="2" Grid.Column="0"
+                                  Style="{StaticResource WidgetTaskCheckBoxStyle}"
+                                  IsChecked="{Binding IsDone, Mode=OneWay}"
+                                  VerticalAlignment="Center"
+                                  Margin="1,0,0,0"
+                                  Click="TaskCheck_Click"
+                                  ToolTip="切换完成状态" />
+
+                        <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding Title}"
+                                   FontSize="12.5" TextTrimming="CharacterEllipsis"
+                                   TextWrapping="NoWrap" Margin="0,0,3,0">
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="Foreground" Value="{DynamicResource WidgetTextBrush}" />
+                                    <Setter Property="FontWeight" Value="SemiBold" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsDone}" Value="True">
+                                            <Setter Property="TextDecorations" Value="Strikethrough" />
+                                            <Setter Property="Foreground" Value="{DynamicResource WidgetMutedBrush}" />
+                                            <Setter Property="FontWeight" Value="Normal" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+
+                        <Grid Grid.Row="1" Grid.Column="1" Margin="0,4,2,0">
+                            <StackPanel Orientation="Horizontal">
+                                <Ellipse Width="5.5" Height="5.5" VerticalAlignment="Center" Margin="0,0,5,0"
+                                         Fill="{Binding CategoryColor, Converter={StaticResource HexToBrushConverter}}" />
+                                <TextBlock Text="{Binding CategoryName}" FontSize="9.5"
+                                           Foreground="{DynamicResource WidgetMutedBrush}"
+                                           MaxWidth="104" TextTrimming="CharacterEllipsis" />
+                                <Ellipse Width="2.5" Height="2.5" Fill="{DynamicResource WidgetMutedBrush}"
+                                         Opacity="0.55" VerticalAlignment="Center" Margin="7,0" />
+                                <TextBlock Text="{Binding TimeDisplay}" FontSize="9.5"
+                                           Foreground="{DynamicResource WidgetMutedBrush}"
+                                           TextTrimming="CharacterEllipsis" />
+                            </StackPanel>
+                            <TextBlock Text="紧急" FontSize="9" FontWeight="SemiBold"
+                                       Foreground="{DynamicResource WidgetDangerBrush}" HorizontalAlignment="Right"
+                                       VerticalAlignment="Center"
+                                       Visibility="{Binding IsUrgent, Converter={StaticResource BoolVisibility}}" />
+                        </Grid>
+                    </Grid>
+                </Border>
+            </DataTemplate>
+        </ResourceDictionary>
+    </Window.Resources>
+
+    <Border x:Name="WidgetShell"
+            Margin="14"
+            Background="{DynamicResource WidgetWindowBackgroundBrush}"
+            BorderBrush="{DynamicResource WidgetBorderBrush}"
+            BorderThickness="1"
+            CornerRadius="22"
+            Effect="{StaticResource WidgetShadow}">
+        <Border.ContextMenu>
+            <ContextMenu Style="{StaticResource AppContextMenuStyle}">
+                <MenuItem Header="打开主界面" Click="OpenMain_Click" />
+                <MenuItem Header="快速新增待办" Click="OpenQuickAdd_Click" />
+                <Separator />
+                <MenuItem Header="设置与外观" Click="OpenSettings_Click" />
+                <MenuItem Header="隐藏悬浮窗" Click="HideWidget_Click" />
+            </ContextMenu>
+        </Border.ContextMenu>
+
+        <Grid Margin="16,14,16,12">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <!-- Header -->
+            <Grid Grid.Row="0" Background="Transparent" MouseLeftButtonDown="Header_MouseLeftButtonDown">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="34" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <Border Width="28" Height="28" CornerRadius="9" Background="{DynamicResource WidgetIconTileBrush}"
+                        HorizontalAlignment="Left" VerticalAlignment="Center">
+                    <Path Data="M 8 15 L 12 19 L 21 9" Stroke="White" StrokeThickness="2.3"
+                          StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round"
+                          HorizontalAlignment="Center" VerticalAlignment="Center" />
+                </Border>
+
+                <StackPanel Grid.Column="1" Margin="8,0,0,0" VerticalAlignment="Center">
+                    <TextBlock Text="清单" FontSize="14.5" FontWeight="Bold"
+                               Foreground="{DynamicResource WidgetTextBrush}" />
+                    <TextBlock Text="桌面待办" FontSize="8.5"
+                               Foreground="{DynamicResource WidgetMutedBrush}" Margin="0,1,0,0" />
+                </StackPanel>
+
+                <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Button Style="{StaticResource WidgetIconButtonStyle}" Content="&#xE713;"
+                            ToolTip="打开设置" Click="OpenSettings_Click" />
+                    <Button Style="{StaticResource WidgetIconButtonStyle}" Content="&#xE921;"
+                            Margin="2,0,0,0"
+                            ToolTip="隐藏悬浮窗（可从托盘恢复）" Click="HideWidget_Click" />
+                </StackPanel>
+            </Grid>
+
+            <!-- Category selector -->
+            <Grid Grid.Row="1" Margin="0,12,0,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="8" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <ComboBox x:Name="WidgetCategoryCombo"
+                          Style="{StaticResource WidgetComboBoxStyle}"
+                          ItemsSource="{Binding WidgetCategoryOptions}"
+                          SelectedItem="{Binding SelectedWidgetCategoryOption, Mode=TwoWay}" />
+                <Button x:Name="QuickAddToggleButton" Grid.Column="2"
+                        Style="{StaticResource WidgetAddButtonStyle}"
+                        ToolTip="快速新增待办"
+                        Click="ToggleQuickAdd_Click">
+                    <TextBlock x:Name="QuickAddGlyph" Text="&#xE710;" FontFamily="{StaticResource IconFont}" FontSize="14" />
+                </Button>
+            </Grid>
+
+            <!-- Quick add -->
+            <Border x:Name="QuickAddPanel" Grid.Row="2" Margin="0,8,0,0"
+                    Background="{DynamicResource WidgetInputBrush}"
+                    BorderBrush="{DynamicResource WidgetBorderBrush}"
+                    BorderThickness="1" CornerRadius="11" Padding="5,4,4,4"
+                    Visibility="Collapsed">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <Grid Margin="6,0,4,0">
+                        <TextBox x:Name="QuickAddInput"
+                                 Background="Transparent" BorderThickness="0"
+                                 Foreground="{DynamicResource WidgetTextBrush}"
+                                 CaretBrush="{DynamicResource WidgetAccentBrush}"
+                                 FontFamily="{StaticResource AppFont}" FontSize="12"
+                                 Height="28" Padding="0" VerticalContentAlignment="Center"
+                                 MaxLength="200"
+                                 PreviewKeyDown="QuickAddInput_PreviewKeyDown" />
+                        <TextBlock Text="写一件小事，Enter 添加" FontSize="11.5"
+                                   Foreground="{DynamicResource WidgetMutedBrush}"
+                                   IsHitTestVisible="False" VerticalAlignment="Center"
+                                   Visibility="{Binding Text, ElementName=QuickAddInput, Converter={StaticResource EmptyStringVisibility}}" />
+                    </Grid>
+                    <Button Grid.Column="1" Style="{StaticResource WidgetMiniButtonStyle}"
+                            Content="添加" Click="QuickAddSubmit_Click" />
+                </Grid>
+            </Border>
+
+            <!-- Task list -->
+            <ScrollViewer x:Name="WidgetScroll" Grid.Row="3" Margin="0,8,-5,0"
+                          VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"
+                          Padding="0,2,5,2">
+                <StackPanel>
+                    <!-- Urgent group -->
+                    <StackPanel Visibility="{Binding WidgetHasUrgent, Converter={StaticResource BoolVisibility}}">
+                        <Grid Margin="4,5,4,4">
+                            <Border Height="1" Background="{DynamicResource WidgetDividerBrush}"
+                                    VerticalAlignment="Center" Margin="54,0,0,0" />
+                            <StackPanel Orientation="Horizontal">
+                                <Ellipse Width="5" Height="5" Fill="{DynamicResource WidgetDangerBrush}"
+                                         VerticalAlignment="Center" Margin="0,0,6,0" />
+                                <TextBlock Text="紧急" FontSize="9.5" FontWeight="SemiBold"
+                                           Foreground="{DynamicResource WidgetDangerBrush}" />
+                                <TextBlock Text="{Binding WidgetUrgentTasks.Count}" FontSize="9"
+                                           Foreground="{DynamicResource WidgetMutedBrush}" Margin="6,0,0,0" />
+                            </StackPanel>
+                        </Grid>
+                        <ItemsControl ItemsSource="{Binding WidgetUrgentTasks}"
+                                      ItemTemplate="{StaticResource WidgetTaskTemplate}" />
+                    </StackPanel>
+
+                    <!-- Pending group -->
+                    <StackPanel Visibility="{Binding WidgetHasPending, Converter={StaticResource BoolVisibility}}">
+                        <Grid Margin="4,9,4,4">
+                            <Border Height="1" Background="{DynamicResource WidgetDividerBrush}"
+                                    VerticalAlignment="Center" Margin="54,0,0,0" />
+                            <StackPanel Orientation="Horizontal">
+                                <Ellipse Width="5" Height="5" Fill="{DynamicResource WidgetMutedBrush}"
+                                         VerticalAlignment="Center" Margin="0,0,6,0" />
+                                <TextBlock Text="待办" FontSize="9.5" FontWeight="SemiBold"
+                                           Foreground="{DynamicResource WidgetMutedBrush}" />
+                                <TextBlock Text="{Binding WidgetPendingTasks.Count}" FontSize="9"
+                                           Foreground="{DynamicResource WidgetMutedBrush}" Margin="6,0,0,0" />
+                            </StackPanel>
+                        </Grid>
+                        <ItemsControl ItemsSource="{Binding WidgetPendingTasks}"
+                                      ItemTemplate="{StaticResource WidgetTaskTemplate}" />
+                    </StackPanel>
+
+                    <!-- Completed group -->
+                    <StackPanel Visibility="{Binding WidgetHasDone, Converter={StaticResource BoolVisibility}}">
+                        <Grid Margin="4,9,4,4">
+                            <Border Height="1" Background="{DynamicResource WidgetDividerBrush}"
+                                    VerticalAlignment="Center" Margin="54,0,0,0" />
+                            <StackPanel Orientation="Horizontal">
+                                <Ellipse Width="5" Height="5" Fill="{DynamicResource WidgetDoneBrush}"
+                                         VerticalAlignment="Center" Margin="0,0,6,0" />
+                                <TextBlock Text="已完成" FontSize="9.5" FontWeight="SemiBold"
+                                           Foreground="{DynamicResource WidgetDoneBrush}" />
+                                <TextBlock Text="{Binding WidgetDoneTasks.Count}" FontSize="9"
+                                           Foreground="{DynamicResource WidgetMutedBrush}" Margin="6,0,0,0" />
+                            </StackPanel>
+                        </Grid>
+                        <ItemsControl ItemsSource="{Binding WidgetDoneTasks}"
+                                      ItemTemplate="{StaticResource WidgetTaskTemplate}" />
+                    </StackPanel>
+
+                    <!-- Empty -->
+                    <StackPanel Margin="0,40,0,0" HorizontalAlignment="Center"
+                                Visibility="{Binding WidgetIsEmpty, Converter={StaticResource BoolVisibility}}">
+                        <Border Width="52" Height="52" CornerRadius="17"
+                                Background="{DynamicResource WidgetDoneSoftBrush}" HorizontalAlignment="Center">
+                            <TextBlock Text="&#xE73E;" FontFamily="{StaticResource IconFont}" FontSize="23"
+                                       Foreground="{DynamicResource WidgetDoneBrush}"
+                                       HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <TextBlock Text="桌面很清爽" FontSize="12.5" FontWeight="SemiBold"
+                                   Foreground="{DynamicResource WidgetTextBrush}"
+                                   HorizontalAlignment="Center" Margin="0,13,0,0" />
+                        <TextBlock Text="点右上角的 + 写下一件小事" FontSize="10.5"
+                                   Foreground="{DynamicResource WidgetMutedBrush}"
+                                   HorizontalAlignment="Center" Margin="0,4,0,0" />
+                    </StackPanel>
+                </StackPanel>
+            </ScrollViewer>
+
+            <!-- Footer -->
+            <Border Grid.Row="4" BorderThickness="0,1,0,0"
+                    BorderBrush="{DynamicResource WidgetDividerBrush}" Padding="4,8,0,0" Margin="0,2,0,0">
+                <Grid>
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                        <Ellipse x:Name="FooterDot" Width="5" Height="5" Fill="{DynamicResource WidgetAccentBrush}"
+                                 VerticalAlignment="Center" Margin="0,0,6,0" />
+                        <TextBlock Text="{Binding WidgetFooterSummary}" FontSize="9.5"
+                                   Foreground="{DynamicResource WidgetMutedBrush}" />
+                    </StackPanel>
+
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                        <ToggleButton Style="{StaticResource WidgetFooterToggleStyle}"
+                                      IsChecked="{Binding Settings.ShowCompletedInWidget, Mode=TwoWay}"
+                                      ToolTip="在悬浮窗中显示或隐藏已完成事项">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="&#xE7B3;" FontFamily="{StaticResource IconFont}" FontSize="10"
+                                           VerticalAlignment="Center" Margin="0,0,5,0" />
+                                <TextBlock Text="{Binding WidgetCompletedTotalCount, StringFormat=完成 {0}}" FontSize="9.5"
+                                           VerticalAlignment="Center" />
+                            </StackPanel>
+                        </ToggleButton>
+                    </StackPanel>
+                </Grid>
+            </Border>
+        </Grid>
+    </Border>
+</Window>

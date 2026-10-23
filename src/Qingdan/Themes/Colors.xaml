@@ -1,0 +1,80 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <FontFamily x:Key="AppFont">Microsoft YaHei UI, Segoe UI</FontFamily>
+    <FontFamily x:Key="IconFont">Segoe Fluent Icons, Segoe MDL2 Assets</FontFamily>
+    <FontFamily x:Key="MonoFont">Cascadia Mono, Consolas</FontFamily>
+
+    <SolidColorBrush x:Key="AppBackgroundBrush" Color="#F4F6FB" />
+    <SolidColorBrush x:Key="SurfaceBrush" Color="#FFFFFF" />
+    <SolidColorBrush x:Key="SurfaceMutedBrush" Color="#F8F9FD" />
+    <SolidColorBrush x:Key="SurfaceHoverBrush" Color="#F1F3F9" />
+    <SolidColorBrush x:Key="BorderBrush" Color="#E7EAF2" />
+    <SolidColorBrush x:Key="BorderStrongBrush" Color="#D9DEEA" />
+    <SolidColorBrush x:Key="TextPrimaryBrush" Color="#1A2036" />
+    <SolidColorBrush x:Key="TextSecondaryBrush" Color="#6B748B" />
+    <SolidColorBrush x:Key="TextMutedBrush" Color="#9BA3B5" />
+    <SolidColorBrush x:Key="TextOnDarkBrush" Color="#F5F6FB" />
+    <SolidColorBrush x:Key="TextOnDarkMutedBrush" Color="#9AA2BD" />
+
+    <SolidColorBrush x:Key="BrandBrush" Color="#5669F5" />
+    <SolidColorBrush x:Key="BrandDarkBrush" Color="#3E4FD9" />
+    <SolidColorBrush x:Key="BrandLightBrush" Color="#8392FF" />
+    <SolidColorBrush x:Key="BrandSoftBrush" Color="#EDF0FF" />
+    <SolidColorBrush x:Key="BrandSoftStrongBrush" Color="#E1E6FF" />
+
+    <SolidColorBrush x:Key="SidebarBrush" Color="#171B2C" />
+    <SolidColorBrush x:Key="SidebarTopBrush" Color="#1C2136" />
+    <SolidColorBrush x:Key="SidebarHoverBrush" Color="#242A42" />
+    <SolidColorBrush x:Key="SidebarSelectedBrush" Color="#2A3150" />
+    <SolidColorBrush x:Key="SidebarBorderBrush" Color="#2A3049" />
+
+    <SolidColorBrush x:Key="PendingBrush" Color="#DE961F" />
+    <SolidColorBrush x:Key="PendingSoftBrush" Color="#FFF3DA" />
+    <SolidColorBrush x:Key="UrgentBrush" Color="#E05243" />
+    <SolidColorBrush x:Key="UrgentSoftBrush" Color="#FFE9E5" />
+    <SolidColorBrush x:Key="UrgentBorderBrush" Color="#F7C9C1" />
+    <SolidColorBrush x:Key="DoneBrush" Color="#269E76" />
+    <SolidColorBrush x:Key="DoneSoftBrush" Color="#E6F7F0" />
+
+    <SolidColorBrush x:Key="ColumnPendingBrush" Color="#F7F8FC" />
+    <SolidColorBrush x:Key="ColumnUrgentBrush" Color="#FFF8F6" />
+    <SolidColorBrush x:Key="ColumnDoneBrush" Color="#F5FAF8" />
+    <SolidColorBrush x:Key="ColumnPendingHeaderBrush" Color="#FFF8E9" />
+    <SolidColorBrush x:Key="ColumnUrgentHeaderBrush" Color="#FFF0ED" />
+    <SolidColorBrush x:Key="ColumnDoneHeaderBrush" Color="#ECF8F3" />
+
+    <LinearGradientBrush x:Key="BrandGradientBrush" StartPoint="0,0" EndPoint="1,1">
+        <GradientStop Color="#6A7BFF" Offset="0" />
+        <GradientStop Color="#4C5BEA" Offset="1" />
+    </LinearGradientBrush>
+
+    <LinearGradientBrush x:Key="SidebarGradientBrush" StartPoint="0,0" EndPoint="1,1">
+        <GradientStop Color="#1D2238" Offset="0" />
+        <GradientStop Color="#141827" Offset="0.62" />
+        <GradientStop Color="#171A2A" Offset="1" />
+    </LinearGradientBrush>
+
+    <RadialGradientBrush x:Key="SidebarGlowBrush" Center="0.2,0.05" GradientOrigin="0.2,0.05" RadiusX="0.9" RadiusY="0.7">
+        <GradientStop Color="#394A9A" Offset="0" />
+        <GradientStop Color="#1A1F33" Offset="0.55" />
+        <GradientStop Color="#171A2A" Offset="1" />
+    </RadialGradientBrush>
+
+    <LinearGradientBrush x:Key="ComposerGlowBrush" StartPoint="0,0" EndPoint="1,0">
+        <GradientStop Color="#FFFFFF" Offset="0" />
+        <GradientStop Color="#FAFBFF" Offset="0.68" />
+        <GradientStop Color="#F4F6FF" Offset="1" />
+    </LinearGradientBrush>
+
+    <SolidColorBrush x:Key="DangerBrush" Color="#D94A42" />
+    <SolidColorBrush x:Key="DangerSoftBrush" Color="#FDEDEB" />
+    <SolidColorBrush x:Key="SuccessBrush" Color="#2CA47B" />
+    <SolidColorBrush x:Key="OverlayBrush" Color="#66101422" />
+
+    <DropShadowEffect x:Key="SoftShadow" BlurRadius="30" ShadowDepth="8" Direction="270" Opacity="0.10" Color="#24345A" />
+    <DropShadowEffect x:Key="PopupShadow" BlurRadius="24" ShadowDepth="6" Direction="270" Opacity="0.16" Color="#1A2340" />
+    <DropShadowEffect x:Key="DialogShadow" BlurRadius="40" ShadowDepth="10" Direction="270" Opacity="0.24" Color="#10162C" />
+    <DropShadowEffect x:Key="WidgetShadow" BlurRadius="34" ShadowDepth="9" Direction="270" Opacity="0.22" Color="#101428" />
+
+</ResourceDictionary>

@@ -1,0 +1,12 @@
+﻿.dotnet/
+.nuget/
+.proto/
+.preview/
+.buildtest/
+bin/
+obj/
+publish/
+.build.log
+.preview.log
+*.user
+dist/
