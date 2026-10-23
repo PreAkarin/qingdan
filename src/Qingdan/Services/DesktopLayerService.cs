@@ -49,7 +49,6 @@ public sealed class DesktopLayerService : IDisposable
     private bool _showDesktop;
     private bool _allowHide = true;
     private bool _disposed;
-    private bool _foreignForegroundSuppressed;
     private DateTime _lastHostCheck = DateTime.MinValue;
     private DateTime _lastLower = DateTime.MinValue;
 
@@ -265,40 +264,19 @@ public sealed class DesktopLayerService : IDisposable
         }
 
         var foreground = DesktopMonitor.GetForegroundWindow();
-        var foregroundPid = DesktopMonitor.GetWindowProcessId(foreground);
-        var ownPid = (uint)Environment.ProcessId;
-        var ownForeground = foregroundPid == ownPid;
         var foregroundClass = DesktopMonitor.GetClassName(foreground);
+        var foregroundPid = DesktopMonitor.GetWindowProcessId(foreground);
+        var ownForeground = foregroundPid == (uint)Environment.ProcessId;
         var shellForeground = foreground == _desktopHost ||
                               foregroundClass is "Progman" or "WorkerW" ||
                               foreground == DesktopMonitor.GetShellWindow();
 
-        var hostAboveAnchor = _desktopHost != IntPtr.Zero && _anchor != IntPtr.Zero &&
-                              DesktopMonitor.IsWindowAbove(_desktopHost, _anchor);
-
-        if (!shellForeground && !ownForeground && foreground != IntPtr.Zero)
-        {
-            _foreignForegroundSuppressed = true;
-        }
-
-        if (!hostAboveAnchor)
-        {
-            _foreignForegroundSuppressed = false;
-        }
-
-        bool showing;
-        if (shellForeground)
-        {
-            showing = hostAboveAnchor;
-        }
-        else if (ownForeground)
-        {
-            showing = hostAboveAnchor || (_showDesktop && !_foreignForegroundSuppressed);
-        }
-        else
-        {
-            showing = hostAboveAnchor && !_foreignForegroundSuppressed;
-        }
+        // The authoritative signal is z-order: during Show Desktop, Explorer raises
+        // the desktop host (Progman on Windows 11 24H2+) above all normal windows.
+        // Foreground can stay on the previously active app during Win+D, so using it
+        // to veto this state would make the widget disappear on Show Desktop.
+        var showing = _desktopHost != IntPtr.Zero && _anchor != IntPtr.Zero &&
+                      DesktopMonitor.IsWindowAbove(_desktopHost, _anchor);
 
         if (showing != _showDesktop || force)
         {
@@ -312,8 +290,8 @@ public sealed class DesktopLayerService : IDisposable
                 LowerToDesktopBottom();
             }
 
-            Log($"state showDesktop={showing} hostAboveAnchor={hostAboveAnchor} " +
-                $"fg=0x{foreground.ToInt64():X} class={foregroundClass} ownFg={ownForeground} suppressed={_foreignForegroundSuppressed}");
+            Log($"state showDesktop={showing} fg=0x{foreground.ToInt64():X} class={foregroundClass} " +
+                $"ownFg={ownForeground} shellFg={shellForeground}");
             return;
         }
 

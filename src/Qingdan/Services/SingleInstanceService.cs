@@ -9,6 +9,7 @@ public sealed class SingleInstanceService : IDisposable
     private const string WindowTitle = "Qingdan.SingleInstance.Host.v1";
     private const int ShowMainMessage = 0x8000 + 0x221;
     private const int QuietMessage = 0x8000 + 0x222;
+    private const int QuitMessage = 0x8000 + 0x223;
 
     private Mutex? _mutex;
     private HwndSource? _messageSource;
@@ -39,7 +40,7 @@ public sealed class SingleInstanceService : IDisposable
         }
     }
 
-    public void StartListening(Action showMain)
+    public void StartListening(Action showMain, Action quit)
     {
         try
         {
@@ -70,6 +71,13 @@ public sealed class SingleInstanceService : IDisposable
                     return IntPtr.Zero;
                 }
 
+                if (msg == QuitMessage)
+                {
+                    handled = true;
+                    quit();
+                    return IntPtr.Zero;
+                }
+
                 return IntPtr.Zero;
             });
         }
@@ -79,9 +87,9 @@ public sealed class SingleInstanceService : IDisposable
         }
     }
 
-    public static void NotifyExistingInstance(bool showMain)
+    public static void NotifyExistingInstance(bool showMain, bool quit = false)
     {
-        var message = showMain ? ShowMainMessage : QuietMessage;
+        var message = quit ? QuitMessage : showMain ? ShowMainMessage : QuietMessage;
         var hwnd = IntPtr.Zero;
 
         for (var attempt = 0; attempt < 35 && hwnd == IntPtr.Zero; attempt++)

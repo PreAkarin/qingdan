@@ -12,7 +12,6 @@ public sealed class AppData
 
     public static AppData CreateFirstRun()
     {
-        var now = DateTime.Now;
         var data = new AppData
         {
             Categories =

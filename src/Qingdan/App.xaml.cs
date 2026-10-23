@@ -19,6 +19,7 @@ public partial class App : Application
     private bool _trayTipShown;
     private bool _loadWarningReported;
     private bool _disposed;
+    private string? _startupDiagnosticsPath;
 
     public App()
     {
@@ -28,6 +29,18 @@ public partial class App : Application
             if (args.ExceptionObject is Exception exception)
             {
                 TryLog("unhandled", exception);
+            }
+        };
+        SessionEnding += (_, _) =>
+        {
+            IsExiting = true;
+            try
+            {
+                State?.FlushSave();
+            }
+            catch
+            {
+                // Best effort while the session ends.
             }
         };
     }
@@ -50,6 +63,28 @@ public partial class App : Application
 
         try
         {
+            _startupDiagnosticsPath = FindArgumentValue(e.Args, "--startup-log=");
+            Diag("startup begin args=" + string.Join(' ', e.Args));
+
+            if (e.Args.Any(arg => string.Equals(arg, "--quit", StringComparison.OrdinalIgnoreCase)))
+            {
+                Diag("quit mode");
+                SingleInstanceService.NotifyExistingInstance(showMain: false, quit: true);
+                await Task.Delay(900);
+                Shutdown();
+                return;
+            }
+
+            var installerMode = InstallationService.DetectLaunchMode(e.Args);
+            if (installerMode is not null)
+            {
+                Diag("installer mode=" + installerMode);
+                var installerWindow = new InstallerWindow(installerMode.Value);
+                installerWindow.ShowDialog();
+                Shutdown();
+                return;
+            }
+
             if (TryGetPreviewDirectory(e.Args, out var previewDirectory))
             {
                 IsPreview = true;
@@ -61,10 +96,12 @@ public partial class App : Application
 
             var isAutoStart = e.Args.Any(arg => string.Equals(arg, "--autostart", StringComparison.OrdinalIgnoreCase));
             var dataDirectory = ResolveDataDirectory(e.Args);
+            Diag($"mode autostart={isAutoStart} data={dataDirectory ?? "<default>"}");
 
             _singleInstance = new SingleInstanceService();
             if (!_singleInstance.TryAcquire(out var alreadyRunning))
             {
+                Diag("another instance is running; notifying and exiting");
                 _singleInstance.Dispose();
                 _singleInstance = null;
                 SingleInstanceService.NotifyExistingInstance(showMain: !isAutoStart);
@@ -72,14 +109,19 @@ public partial class App : Application
                 return;
             }
 
-            _singleInstance.StartListening(() => ShowMain());
+            Diag("single instance acquired");
+            _singleInstance.StartListening(() => ShowMain(), () => ExitApp());
+            Diag("single instance listener created");
 
             var store = new DataStore(dataDirectory);
             var loadResult = store.Load();
+            Diag($"data loaded warning={loadResult.Warning is not null} tasks={loadResult.Data.Tasks.Count} categories={loadResult.Data.Categories.Count}");
             State = new AppState(store, loadResult);
             State.SettingsChanged += OnSettingsChanged;
+            Diag("state initialized");
 
             var startupError = ApplyAutoStartOnLaunch();
+            Diag("autostart applied error=" + (startupError ?? "<none>"));
             var firstLaunch = State.Settings.FirstRun;
             if (firstLaunch)
             {
@@ -90,20 +132,24 @@ public partial class App : Application
             try
             {
                 _tray = new TrayService(this, State);
+                Diag("tray created");
             }
             catch (Exception ex)
             {
                 TryLog("tray", ex);
+                Diag("tray failed: " + ex.Message);
             }
 
             if (State.Settings.ShowWidget)
             {
                 EnsureWidget();
+                Diag("widget ensured");
             }
 
             if (!isAutoStart)
             {
                 ShowMain();
+                Diag("main shown");
             }
             else if (firstLaunch)
             {
@@ -113,6 +159,8 @@ public partial class App : Application
                     () => _tray?.ShowBalloon("清单已启动", "桌面悬浮窗已就位，可在托盘中打开主界面。"),
                     DispatcherPriority.ApplicationIdle);
             }
+
+            Diag("startup completed");
 
             if (!string.IsNullOrWhiteSpace(startupError))
             {
@@ -132,6 +180,7 @@ public partial class App : Application
         }
         catch (Exception ex)
         {
+            Diag("startup exception: " + ex);
             TryLog("startup", ex);
             if (!IsPreview)
             {
@@ -520,6 +569,36 @@ public partial class App : Application
 
         var fromEnvironment = Environment.GetEnvironmentVariable("QINGDAN_DATA_DIR");
         return string.IsNullOrWhiteSpace(fromEnvironment) ? null : fromEnvironment;
+    }
+
+    private static string? FindArgumentValue(string[] args, string prefix)
+    {
+        var argument = args.FirstOrDefault(arg => arg.StartsWith(prefix, StringComparison.OrdinalIgnoreCase));
+        return argument is null ? null : argument[prefix.Length..].Trim('"');
+    }
+
+    private void Diag(string message)
+    {
+        if (string.IsNullOrWhiteSpace(_startupDiagnosticsPath))
+        {
+            return;
+        }
+
+        try
+        {
+            var parent = Path.GetDirectoryName(_startupDiagnosticsPath);
+            if (!string.IsNullOrWhiteSpace(parent))
+            {
+                Directory.CreateDirectory(parent);
+            }
+
+            File.AppendAllText(_startupDiagnosticsPath,
+                $"{DateTime.Now:yyyy-MM-dd HH:mm:ss.fff} {message}{Environment.NewLine}");
+        }
+        catch
+        {
+            // Diagnostics are best effort.
+        }
     }
 
     private static bool TryGetPreviewDirectory(string[] args, out string directory)

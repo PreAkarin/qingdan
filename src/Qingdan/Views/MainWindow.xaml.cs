@@ -24,6 +24,10 @@ public partial class MainWindow : Window
         InitializeComponent();
         DataContext = state;
 
+        var workArea = SystemParameters.WorkArea;
+        Width = Math.Max(MinWidth, Math.Min(Width, workArea.Width - 32));
+        Height = Math.Max(MinHeight, Math.Min(Height, workArea.Height - 32));
+
         Loaded += OnLoaded;
         StateChanged += (_, _) => UpdateMaximizeGlyph();
         Closing += OnClosing;

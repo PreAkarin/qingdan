@@ -1,12 +1,27 @@
-﻿.dotnet/
+# Build and local caches
+.dotnet/
 .nuget/
-.proto/
-.preview/
-.buildtest/
+.nuget-offline/
+.offline-runtimes/
 bin/
 obj/
 publish/
-.build.log
-.preview.log
-*.user
 dist/
+.zip-stage/
+
+# Local test and prototype data
+.proto/
+.runtime-test/
+.buildtest/
+.run/
+.smoke/
+.preview/
+.preview-published/
+.preview-final/
+*.log
+
+# IDE and user files
+.vs/
+.idea/
+*.user
+*.suo

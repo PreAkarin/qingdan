@@ -19,6 +19,8 @@ public partial class SettingsWindow : Window
         InitializeComponent();
         DataContext = state;
         SkinList.ItemsSource = WidgetSkins.All;
+        Height = Math.Max(MinHeight, Math.Min(760, SystemParameters.WorkArea.Height - 36));
+        Width = Math.Max(MinWidth, Math.Min(780, SystemParameters.WorkArea.Width - 36));
     }
 
     private void Close_Click(object sender, RoutedEventArgs e) => Close();

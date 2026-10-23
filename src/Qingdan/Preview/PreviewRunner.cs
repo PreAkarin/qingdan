@@ -62,6 +62,26 @@ internal static class PreviewRunner
             Capture(categoryDialog, Path.Combine(directory, "category-dialog.png"));
             categoryDialog.Close();
 
+            var installer = new InstallerWindow(InstallerLaunchMode.Install)
+            {
+                WindowStartupLocation = WindowStartupLocation.Manual,
+                Left = 100,
+                Top = 80
+            };
+            await ShowAndWaitAsync(installer);
+            Capture(installer, Path.Combine(directory, "installer.png"));
+            installer.Close();
+
+            var uninstaller = new InstallerWindow(InstallerLaunchMode.Uninstall)
+            {
+                WindowStartupLocation = WindowStartupLocation.Manual,
+                Left = 100,
+                Top = 80
+            };
+            await ShowAndWaitAsync(uninstaller);
+            Capture(uninstaller, Path.Combine(directory, "uninstaller.png"));
+            uninstaller.Close();
+
             state.Settings.WidgetSkinId = "mist";
             state.Settings.WidgetBackgroundOpacity = 0.92;
             var widget = new WidgetWindow(app, state)

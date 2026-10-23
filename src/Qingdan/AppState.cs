@@ -499,6 +499,7 @@ public sealed class AppState : ObservableObject
         category.Color = DataStore.NormalizeColor(color);
         RebuildCategoryOptions();
         RefreshAll();
+        OnPropertyChanged(nameof(CurrentBoardTitle));
         ScheduleSave();
         return true;
     }
