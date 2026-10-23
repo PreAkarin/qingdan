@@ -25,7 +25,7 @@ public sealed record UninstallResult(bool Success, string Message, bool DataRemo
 
 public sealed class InstallationService
 {
-    public const string AppFileName = "清单.exe";
+    public const string AppFileName = "Qingdan.exe";
     public const string InstalledInfoFileName = "install-info.json";
     public const string UninstallRegistryPath = @"Software\Microsoft\Windows\CurrentVersion\Uninstall\Qingdan";
     public const string RunRegistryPath = @"Software\Microsoft\Windows\CurrentVersion\Run";
@@ -49,7 +49,7 @@ public sealed class InstallationService
     }
 
     public static string DefaultInstallDirectory =>
-        Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Programs", "清单");
+        Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Programs", "Qingdan");
 
     public static string DataDirectory =>
         Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Qingdan");

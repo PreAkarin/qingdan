@@ -30,8 +30,9 @@ public sealed class DesktopLayerService : IDisposable
     private const int SC_MINIMIZE = 0xF020;
     private const int SW_SHOWNOACTIVATE = 4;
 
-    private static readonly IntPtr HWND_TOP = IntPtr.Zero;
     private static readonly IntPtr HWND_BOTTOM = new(1);
+    private static readonly IntPtr HWND_TOPMOST = new(-1);
+    private static readonly IntPtr HWND_NOTOPMOST = new(-2);
 
     private readonly string? _logPath;
 
@@ -355,7 +356,12 @@ public sealed class DesktopLayerService : IDisposable
                 DesktopMonitor.ShowWindow(_hwnd, SW_SHOWNOACTIVATE);
             }
 
-            DesktopMonitor.SetWindowPos(_hwnd, HWND_TOP, 0, 0, 0, 0,
+            // During Show Desktop / Win+D the shell raises the desktop host above
+            // the normal z-order band. HWND_TOP alone is not enough: the widget
+            // must temporarily enter the topmost band so it is composited above
+            // the desktop wallpaper, icons and taskbar. It is removed from the
+            // topmost band immediately when the desktop is hidden again.
+            DesktopMonitor.SetWindowPos(_hwnd, HWND_TOPMOST, 0, 0, 0, 0,
                 SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE | SWP_SHOWWINDOW);
         }
         catch
@@ -386,6 +392,10 @@ public sealed class DesktopLayerService : IDisposable
 
         try
         {
+            // Leave the topmost band before returning to the normal desktop layer,
+            // so ordinary application windows can cover the widget again.
+            DesktopMonitor.SetWindowPos(_hwnd, HWND_NOTOPMOST, 0, 0, 0, 0,
+                SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
             DesktopMonitor.SetWindowPos(_hwnd, HWND_BOTTOM, 0, 0, 0, 0,
                 SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
             _lastLower = DateTime.Now;

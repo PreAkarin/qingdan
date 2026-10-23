@@ -181,7 +181,7 @@ static async Task<int> RunInstallerTestAsync(string[] args)
         var result = await service.InstallAsync(target, createDesktopShortcut: true,
             new Progress<InstallProgress>(p => Console.WriteLine($"      {p.Percent:0}% {p.Stage}")));
         Check(result.Success, "安装服务执行成功");
-        Check(File.Exists(Path.Combine(target, InstallationService.AppFileName)), "安装目录中存在 清单.exe");
+        Check(File.Exists(Path.Combine(target, InstallationService.AppFileName)), "安装目录中存在 Qingdan.exe");
         Check(File.Exists(Path.Combine(target, InstallationService.InstalledInfoFileName)), "写入 install-info.json");
         Check(File.ReadAllBytes(Path.Combine(target, InstallationService.AppFileName)).Length == new FileInfo(sourceExe).Length,
             "安装文件内容完整");

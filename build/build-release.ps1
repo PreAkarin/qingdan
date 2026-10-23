@@ -1,4 +1,4 @@
-﻿param(
+param(
     [string]$Workspace = (Split-Path -Parent $PSScriptRoot),
     [string]$RuntimeVersion = '8.0.26',
     [switch]$SkipOfflinePackGeneration
@@ -51,7 +51,7 @@ if ($LASTEXITCODE -ne 0) {
     throw "dotnet publish failed with exit code $LASTEXITCODE"
 }
 
-$portableExe = Join-Path $publishDir '清单.exe'
+$portableExe = Join-Path $publishDir 'Qingdan.exe'
 if (-not (Test-Path $portableExe)) {
     throw "Published executable not found: $portableExe"
 }
@@ -61,17 +61,17 @@ if (Test-Path $dist) {
 }
 New-Item -ItemType Directory -Path $dist | Out-Null
 
-$distPortable = Join-Path $dist '清单.exe'
-$distInstaller = Join-Path $dist '清单安装程序.exe'
+$distPortable = Join-Path $dist 'Qingdan.exe'
+$distInstaller = Join-Path $dist 'QingdanSetup.exe'
 Copy-Item $portableExe $distPortable
 Copy-Item $portableExe $distInstaller
 Copy-Item (Join-Path $Workspace 'README.md') (Join-Path $dist 'README.md')
 
-$zipPath = Join-Path $dist '清单-免安装.zip'
+$zipPath = Join-Path $dist 'Qingdan-Portable.zip'
 $zipStage = Join-Path $Workspace '.zip-stage'
 if (Test-Path $zipStage) { Remove-Item $zipStage -Recurse -Force }
 New-Item -ItemType Directory -Path $zipStage | Out-Null
-Copy-Item $portableExe (Join-Path $zipStage '清单.exe')
+Copy-Item $portableExe (Join-Path $zipStage 'Qingdan.exe')
 Copy-Item (Join-Path $Workspace 'README.md') (Join-Path $zipStage 'README.md')
 Compress-Archive -Path (Join-Path $zipStage '*') -DestinationPath $zipPath -CompressionLevel Optimal
 Remove-Item $zipStage -Recurse -Force
