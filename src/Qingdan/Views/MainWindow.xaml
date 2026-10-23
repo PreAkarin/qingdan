@@ -184,6 +184,10 @@
                         Padding="14"
                         CornerRadius="14"
                         BorderThickness="1"
+                        Cursor="SizeAll"
+                        PreviewMouseLeftButtonDown="TaskCard_PreviewMouseLeftButtonDown"
+                        PreviewMouseMove="TaskCard_PreviewMouseMove"
+                        PreviewMouseLeftButtonUp="TaskCard_PreviewMouseLeftButtonUp"
                         MouseLeftButtonDown="TaskCard_MouseLeftButtonDown">
                     <Border.Style>
                         <Style TargetType="Border">
@@ -555,7 +559,7 @@
                                 </TextBlock>
                             </Border>
                         </StackPanel>
-                        <TextBlock Text="{Binding TodayDoneCount, StringFormat=今天完成了 {0} 件事 · 右键待办可以快速更改状态}"
+                        <TextBlock Text="{Binding TodayDoneCount, StringFormat=今天完成了 {0} 件事 · 右键或拖动可更改状态}"
                                    FontSize="11.5" Foreground="{StaticResource TextSecondaryBrush}"
                                    Margin="1,5,0,0" />
                     </StackPanel>
@@ -702,8 +706,11 @@
                 </Grid.ColumnDefinitions>
 
                 <!-- Pending -->
-                <Border Grid.Column="0" Margin="0,0,7,0" Background="{StaticResource ColumnPendingBrush}"
-                        BorderBrush="#EAEDF5" BorderThickness="1" CornerRadius="16">
+                <Border x:Name="PendingColumn" Grid.Column="0" Margin="0,0,7,0" Background="{StaticResource ColumnPendingBrush}"
+                        BorderBrush="#EAEDF5" BorderThickness="1" CornerRadius="16"
+                        AllowDrop="True" Tag="Pending"
+                        DragEnter="TaskColumn_DragEnter" DragOver="TaskColumn_DragOver"
+                        DragLeave="TaskColumn_DragLeave" Drop="TaskColumn_Drop">
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="54" />
@@ -747,12 +754,32 @@
                                            HorizontalAlignment="Center" Margin="0,4,0,0" />
                             </StackPanel>
                         </Grid>
+
+                        <Border x:Name="PendingDropOverlay"
+                                Grid.RowSpan="2"
+                                Margin="5"
+                                CornerRadius="13"
+                                Background="#E6FFF9EA"
+                                BorderBrush="{StaticResource PendingBrush}"
+                                BorderThickness="2"
+                                Visibility="Collapsed"
+                                IsHitTestVisible="False"
+                                Panel.ZIndex="20">
+                            <Border Background="{StaticResource PendingBrush}" CornerRadius="9"
+                                    Padding="14,8" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <TextBlock Text="松开移至未处理" Foreground="White"
+                                           FontSize="12" FontWeight="SemiBold" />
+                            </Border>
+                        </Border>
                     </Grid>
                 </Border>
 
                 <!-- Urgent -->
-                <Border Grid.Column="1" Margin="7,0" Background="{StaticResource ColumnUrgentBrush}"
-                        BorderBrush="#F1E5E2" BorderThickness="1" CornerRadius="16">
+                <Border x:Name="UrgentColumn" Grid.Column="1" Margin="7,0" Background="{StaticResource ColumnUrgentBrush}"
+                        BorderBrush="#F1E5E2" BorderThickness="1" CornerRadius="16"
+                        AllowDrop="True" Tag="Urgent"
+                        DragEnter="TaskColumn_DragEnter" DragOver="TaskColumn_DragOver"
+                        DragLeave="TaskColumn_DragLeave" Drop="TaskColumn_Drop">
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="54" />
@@ -796,12 +823,32 @@
                                            HorizontalAlignment="Center" Margin="0,4,0,0" />
                             </StackPanel>
                         </Grid>
+
+                        <Border x:Name="UrgentDropOverlay"
+                                Grid.RowSpan="2"
+                                Margin="5"
+                                CornerRadius="13"
+                                Background="#E6FFF4F1"
+                                BorderBrush="{StaticResource UrgentBrush}"
+                                BorderThickness="2"
+                                Visibility="Collapsed"
+                                IsHitTestVisible="False"
+                                Panel.ZIndex="20">
+                            <Border Background="{StaticResource UrgentBrush}" CornerRadius="9"
+                                    Padding="14,8" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <TextBlock Text="松开移至紧急" Foreground="White"
+                                           FontSize="12" FontWeight="SemiBold" />
+                            </Border>
+                        </Border>
                     </Grid>
                 </Border>
 
                 <!-- Done -->
-                <Border Grid.Column="2" Margin="7,0,0,0" Background="{StaticResource ColumnDoneBrush}"
-                        BorderBrush="#E7F0EB" BorderThickness="1" CornerRadius="16">
+                <Border x:Name="DoneColumn" Grid.Column="2" Margin="7,0,0,0" Background="{StaticResource ColumnDoneBrush}"
+                        BorderBrush="#E7F0EB" BorderThickness="1" CornerRadius="16"
+                        AllowDrop="True" Tag="Done"
+                        DragEnter="TaskColumn_DragEnter" DragOver="TaskColumn_DragOver"
+                        DragLeave="TaskColumn_DragLeave" Drop="TaskColumn_Drop">
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="54" />
@@ -842,6 +889,23 @@
                                            HorizontalAlignment="Center" Margin="0,4,0,0" />
                             </StackPanel>
                         </Grid>
+
+                        <Border x:Name="DoneDropOverlay"
+                                Grid.RowSpan="2"
+                                Margin="5"
+                                CornerRadius="13"
+                                Background="#E6EFFBF4"
+                                BorderBrush="{StaticResource DoneBrush}"
+                                BorderThickness="2"
+                                Visibility="Collapsed"
+                                IsHitTestVisible="False"
+                                Panel.ZIndex="20">
+                            <Border Background="{StaticResource DoneBrush}" CornerRadius="9"
+                                    Padding="14,8" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <TextBlock Text="松开移至已处理" Foreground="White"
+                                           FontSize="12" FontWeight="SemiBold" />
+                            </Border>
+                        </Border>
                     </Grid>
                 </Border>
             </Grid>

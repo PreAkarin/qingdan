@@ -16,6 +16,8 @@ public partial class MainWindow : Window
     private readonly App _app;
     private readonly AppState _state;
     private bool _closingForExit;
+    private Point _taskDragStart;
+    private TodoItem? _taskDragCandidate;
 
     public MainWindow(App app, AppState state)
     {
@@ -332,6 +334,147 @@ public partial class MainWindow : Window
             OpenTaskEditor(task);
             e.Handled = true;
         }
+    }
+
+    private void TaskCard_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+    {
+        _taskDragCandidate = null;
+        if (e.ChangedButton != MouseButton.Left || IsInteractiveSource(e.OriginalSource as DependencyObject))
+        {
+            return;
+        }
+
+        if ((sender as FrameworkElement)?.DataContext is TodoItem task)
+        {
+            _taskDragStart = e.GetPosition(this);
+            _taskDragCandidate = task;
+        }
+    }
+
+    private void TaskCard_PreviewMouseMove(object sender, MouseEventArgs e)
+    {
+        if (_taskDragCandidate is null)
+        {
+            return;
+        }
+
+        if (e.LeftButton != MouseButtonState.Pressed)
+        {
+            _taskDragCandidate = null;
+            return;
+        }
+
+        var position = e.GetPosition(this);
+        if (Math.Abs(position.X - _taskDragStart.X) < SystemParameters.MinimumHorizontalDragDistance &&
+            Math.Abs(position.Y - _taskDragStart.Y) < SystemParameters.MinimumVerticalDragDistance)
+        {
+            return;
+        }
+
+        var task = _taskDragCandidate;
+        _taskDragCandidate = null;
+        var data = new DataObject(typeof(TodoItem), task);
+        DragDrop.DoDragDrop((DependencyObject)sender, data, DragDropEffects.Move);
+        HideAllDropOverlays();
+        e.Handled = true;
+    }
+
+    private void TaskCard_PreviewMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+    {
+        _taskDragCandidate = null;
+    }
+
+    private void TaskColumn_DragEnter(object sender, DragEventArgs e)
+    {
+        TaskColumn_DragOver(sender, e);
+    }
+
+    private void TaskColumn_DragOver(object sender, DragEventArgs e)
+    {
+        if (sender is not Border column || !e.Data.GetDataPresent(typeof(TodoItem)))
+        {
+            e.Effects = DragDropEffects.None;
+            e.Handled = true;
+            return;
+        }
+
+        ShowDropOverlay(column);
+        e.Effects = DragDropEffects.Move;
+        e.Handled = true;
+    }
+
+    private void TaskColumn_DragLeave(object sender, DragEventArgs e)
+    {
+        if (sender is not Border column)
+        {
+            return;
+        }
+
+        // DragEnter/Leave also fire while moving over the column's children.
+        // Only collapse the hint when the pointer has actually left the column.
+        var position = e.GetPosition(column);
+        if (position.X >= 0 && position.Y >= 0 &&
+            position.X <= column.ActualWidth && position.Y <= column.ActualHeight)
+        {
+            return;
+        }
+
+        HideDropOverlay(column);
+    }
+
+    private void TaskColumn_Drop(object sender, DragEventArgs e)
+    {
+        HideAllDropOverlays();
+        if (sender is not Border column ||
+            e.Data.GetData(typeof(TodoItem)) is not TodoItem task ||
+            !Enum.TryParse<TodoStatus>(column.Tag?.ToString(), out var status))
+        {
+            return;
+        }
+
+        _state.SetStatus(task, status);
+        e.Effects = DragDropEffects.Move;
+        e.Handled = true;
+    }
+
+    private void ShowDropOverlay(Border column)
+    {
+        HideAllDropOverlays();
+        if (ReferenceEquals(column, PendingColumn))
+        {
+            PendingDropOverlay.Visibility = Visibility.Visible;
+        }
+        else if (ReferenceEquals(column, UrgentColumn))
+        {
+            UrgentDropOverlay.Visibility = Visibility.Visible;
+        }
+        else if (ReferenceEquals(column, DoneColumn))
+        {
+            DoneDropOverlay.Visibility = Visibility.Visible;
+        }
+    }
+
+    private void HideDropOverlay(Border column)
+    {
+        if (ReferenceEquals(column, PendingColumn))
+        {
+            PendingDropOverlay.Visibility = Visibility.Collapsed;
+        }
+        else if (ReferenceEquals(column, UrgentColumn))
+        {
+            UrgentDropOverlay.Visibility = Visibility.Collapsed;
+        }
+        else if (ReferenceEquals(column, DoneColumn))
+        {
+            DoneDropOverlay.Visibility = Visibility.Collapsed;
+        }
+    }
+
+    private void HideAllDropOverlays()
+    {
+        PendingDropOverlay.Visibility = Visibility.Collapsed;
+        UrgentDropOverlay.Visibility = Visibility.Collapsed;
+        DoneDropOverlay.Visibility = Visibility.Collapsed;
     }
 
     private void TaskCheck_Click(object sender, RoutedEventArgs e)
