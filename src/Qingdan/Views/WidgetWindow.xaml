@@ -303,7 +303,8 @@
                                               Foreground="{TemplateBinding Foreground}"
                                               Padding="{TemplateBinding Padding}"
                                               Content="{TemplateBinding SelectionBoxItem}"
-                                              ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}" />
+                                              ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}"
+                                              IsChecked="{Binding IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}" />
                                 <Popup x:Name="PART_Popup" IsOpen="{TemplateBinding IsDropDownOpen}"
                                        Placement="Bottom" VerticalOffset="5" AllowsTransparency="True" Focusable="False"
                                        PopupAnimation="Fade">
